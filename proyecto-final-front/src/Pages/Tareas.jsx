@@ -24,7 +24,7 @@ const Tareas = ({ user }) => {
   // Modificar la validación de roles
   useEffect(() => {
     const cargarTareas = async () => {
-      if (user?.token && user?.Rol === 'profesor') {  // Cambiado de 'maker' a 'profesor'
+      if (user?.token && user?.Rol === 'profesor') {
         try {
           const misTareas = await obtenerMisTareas()
           setTareas(misTareas)
@@ -261,7 +261,7 @@ const Tareas = ({ user }) => {
         </p>
       )}
       
-      {user?.Rol === 'profesor' ? (  // Cambiado de 'maker' a 'profesor'
+      {user?.Rol === 'profesor' ? (
         <>
           <h3>Crear Nueva Tarea</h3>
           <form onSubmit={handleSubmit} className="tarea-form">

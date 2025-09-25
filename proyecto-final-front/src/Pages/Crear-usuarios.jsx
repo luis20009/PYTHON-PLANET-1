@@ -8,46 +8,36 @@ const Crear = ({ user }) => {
   const [username, setUsername] = useState("")
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
-  const [Rol, setRol] = useState("usuario")  // Cambiado de "user" a "usuario"
+  const [Rol, setRol] = useState("usuario")
   const [message, setMessage] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
     try {
-      // Validaciones del lado del cliente
-      if (username.length < 3) {
-        setMessage("❌ El nombre de usuario debe tener al menos 3 caracteres")
-        return
+      const newUser = {
+        username,
+        name,
+        password,
+        Rol
       }
       
-      if (password.length < 6) {
-        setMessage("❌ La contraseña debe tener al menos 6 caracteres")
-        return
-      }
-      
-      if (!name) {
-        setMessage("❌ El nombre es requerido")
-        return
-      }
-
-      const newUser = { username, name, password, Rol }
-      await userService.createUser(newUser)
-      
+      await userService.create(newUser)
       setMessage("✅ Usuario creado correctamente")
+      
+      // Limpiar formulario
       setUsername("")
       setName("")
       setPassword("")
       setRol("usuario")
       
-      // Esperar un momento antes de recargar
       setTimeout(() => {
         window.location.reload()
       }, 1000)
       
     } catch (error) {
       console.error('Error:', error)
-      setMessage(`❌ ${error.message}`)
+      setMessage(`❌ ${error.response?.data?.error || error.message}`)
     }
 
     setTimeout(() => setMessage(null), 4000)
@@ -66,6 +56,7 @@ const Crear = ({ user }) => {
             value={username}
             onChange={e => setUsername(e.target.value)}
             required
+            minLength={3}
           />
         </div>
         <div>
@@ -84,11 +75,16 @@ const Crear = ({ user }) => {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
+            minLength={6}
           />
         </div>
         <div>
           <label>Rol: </label>
-          <select value={Rol} onChange={e => setRol(e.target.value)}>
+          <select 
+            value={Rol} 
+            onChange={e => setRol(e.target.value)}
+            required
+          >
             <option value="usuario">Usuario</option>
             <option value="profesor">Profesor</option>
             <option value="administrador">Administrador</option>
@@ -101,4 +97,4 @@ const Crear = ({ user }) => {
   )
 }
 
-export default Crear
+export default Crear

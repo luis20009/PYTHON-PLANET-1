@@ -15,6 +15,8 @@ usersRouter.get('/', async (request, response) => {
   }
 });
 
+const validRoles = ['usuario', 'profesor', 'administrador'];
+
 // Create new user
 usersRouter.post('/', async (request, response) => {
   try {
@@ -27,33 +29,10 @@ usersRouter.post('/', async (request, response) => {
       });
     }
 
-    // Validate username length
-    if (username.length < 3) {
-      return response.status(400).json({
-        error: 'El nombre de usuario debe tener al menos 3 caracteres'
-      });
-    }
-
-    // Validate password strength
-    if (password.length < 6) {
-      return response.status(400).json({
-        error: 'La contraseña debe tener al menos 6 caracteres'
-      });
-    }
-
     // Validate role
-    const validRoles = ['usuario', 'profesor', 'administrador'];
     if (!validRoles.includes(Rol)) {
       return response.status(400).json({
-        error: 'Rol inválido'  // Cambiado de 'Invalid role'
-      });
-    }
-
-    // Check if username already exists
-    const existingUser = await User.findOne({ where: { username } });
-    if (existingUser) {
-      return response.status(400).json({
-        error: 'El nombre de usuario ya está en uso'
+        error: 'Rol inválido. Debe ser: usuario, profesor o administrador'
       });
     }
 
@@ -64,7 +43,7 @@ usersRouter.post('/', async (request, response) => {
       username,
       name,
       passwordHash,
-      Rol: Rol || 'usuario' // Cambiado de 'user' a 'usuario'
+      Rol
     });
 
     response.status(201).json({
@@ -74,9 +53,9 @@ usersRouter.post('/', async (request, response) => {
       Rol: user.Rol
     });
   } catch (error) {
-    response.status(500).json({
-      error: 'Error al crear el usuario',  // Cambiado a español
-      details: error.message
+    console.error('Error creating user:', error);
+    response.status(400).json({
+      error: error.message
     });
   }
 });
@@ -105,4 +84,4 @@ usersRouter.delete('/:id', async (request, response) => {
   }
 });
 
-module.exports = usersRouter;
+module.exports = usersRouter;

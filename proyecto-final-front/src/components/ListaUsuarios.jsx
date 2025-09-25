@@ -53,7 +53,7 @@ const ListaUsuarios = ({ user }) => {
                   <br />
                   Nombre: {u.name}
                   <br />
-                  Rol: <em>{u.Rol || "usuario"}</em>  {/* Cambiado de "Sin rol" a "usuario" */}
+                  Rol: <em>{u.Rol || "Sin rol"}</em>
                 </div>
                 {/* No mostrar el botón de eliminar para el usuario actual */}
                 {user?.username !== u.username && (
@@ -79,4 +79,4 @@ const ListaUsuarios = ({ user }) => {
   )
 }
 
-export default ListaUsuarios
+export default ListaUsuarios

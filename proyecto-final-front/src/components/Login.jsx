@@ -11,14 +11,14 @@ const Login = ({ handleLogin: parentHandleLogin, username, setUsername, password
     setLoading(true)
 
     try {
-      const user = await parentHandleLogin(event)
-      // Asegurarse de que el usuario se guarde en localStorage
-      window.localStorage.setItem('loggedUser', JSON.stringify(user))
-      setToken(user.token)
+      // Usamos la función handleLogin que viene como prop
+      await parentHandleLogin(event)
       
+      setUsername('')
+      setPassword('')
+
     } catch (error) {
       console.error('Error en login:', error)
-      setMensaje("Error al iniciar sesión")
     } finally {
       setLoading(false)
     }

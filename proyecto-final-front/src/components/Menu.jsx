@@ -2,8 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 
 const Menu = ({ user }) => {
   const location = useLocation();
-
-  // Detectar si el usuario tiene un rol que activa rutas específicas
   const hasRoleView = ["administrador", "usuario", "profesor"].includes(user?.Rol);
 
   return (

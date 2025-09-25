@@ -4,19 +4,13 @@ import { BASE_URL } from './config'
 
 const baseUrl = `${BASE_URL}/users`
 
-const createUser = async userData => {
-  try {
-    const response = await axios.post(baseUrl, userData)
-    return response.data
-  } catch (error) {
-    // Mejorar el manejo del error para mostrar el mensaje específico del backend
-    const errorMessage = error.response?.data?.error || 'Error al crear el usuario'
-    throw new Error(errorMessage)
-  }
-}
-
 const getAll = async () => {
   const response = await axios.get(baseUrl)
+  return response.data
+}
+
+const createUser = async userData => {
+  const response = await axios.post(baseUrl, userData)
   return response.data
 }
 

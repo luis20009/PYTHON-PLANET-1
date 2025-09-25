@@ -2,21 +2,32 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 
 const Tarea = sequelize.define('Tarea', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   titulo: {
     type: DataTypes.STRING,
     allowNull: false
   },
   descripcion: {
-    type: DataTypes.TEXT
+    type: DataTypes.TEXT,
+    allowNull: false
   },
   fechaLimite: {
     type: DataTypes.DATE,
     allowNull: false
   },
   preguntas: {
-    type: DataTypes.JSONB,
-    allowNull: false,
-    defaultValue: []
+    type: DataTypes.TEXT,
+    get() {
+      const rawValue = this.getDataValue('preguntas');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('preguntas', JSON.stringify(value || []));
+    }
   },
   creadorId: {
     type: DataTypes.INTEGER,
@@ -26,6 +37,9 @@ const Tarea = sequelize.define('Tarea', {
       key: 'id'
     }
   }
+}, {
+  tableName: 'tareas',
+  timestamps: true
 });
 
 module.exports = Tarea;

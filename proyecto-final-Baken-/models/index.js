@@ -15,14 +15,14 @@ User.hasMany(Blog, {
   as: 'blogs'
 });
 
-User.hasMany(Tarea, { 
+Tarea.belongsTo(User, {
   foreignKey: 'creadorId',
-  as: 'tareasCreadas'
+  as: 'autor'
 });
 
-Tarea.belongsTo(User, { 
+User.hasMany(Tarea, {
   foreignKey: 'creadorId',
-  as: 'creador'
+  as: 'tareas'
 });
 
 // Test database connection
