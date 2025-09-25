@@ -22,7 +22,7 @@ const Crear = ({ user }) => {
         Rol
       }
       
-      await userService.create(newUser)
+      await userService.createUser(newUser)
       setMessage("✅ Usuario creado correctamente")
       
       // Limpiar formulario
