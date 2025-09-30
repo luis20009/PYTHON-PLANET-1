@@ -7,7 +7,7 @@ usersRouter.get('/', async (request, response) => {
   try {
     const users = await User.findAll({
       where: {},
-      attributes: ['id', 'username', 'name', 'Rol']
+      attributes: ['id', 'username', 'name', 'email', 'Rol']
     });
     response.json(users);
   } catch (error) {
@@ -20,12 +20,12 @@ const validRoles = ['usuario', 'profesor', 'administrador'];
 // Create new user
 usersRouter.post('/', async (request, response) => {
   try {
-    const { username, name, password, Rol } = request.body;
+    const { username, name, email, password, Rol } = request.body;
 
     // Validate required fields
-    if (!username || !password || !name) {
+    if (!username || !password || !name || !email) {
       return response.status(400).json({
-        error: 'El usuario, contraseña y nombre son requeridos'
+        error: 'El usuario, contraseña, nombre y correo son requeridos'
       });
     }
 
@@ -42,6 +42,7 @@ usersRouter.post('/', async (request, response) => {
     const user = await User.create({
       username,
       name,
+      email,
       passwordHash,
       Rol
     });
@@ -50,6 +51,7 @@ usersRouter.post('/', async (request, response) => {
       id: user.id,
       username: user.username,
       name: user.name,
+      email: user.email,
       Rol: user.Rol
     });
   } catch (error) {

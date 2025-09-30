@@ -4,8 +4,8 @@ const config = {
   PORT: process.env.PORT || 3001,
   DATABASE_CONFIG: {
     username: 'postgres',
-    password: 'Jhoan',
-    database: 'PYTHON',
+    password: 'jhoan',
+    dialect: 'postgres',
     host: 'localhost',
     dialect: 'postgres',
     port: 5432

@@ -9,9 +9,9 @@ tareasRouter.get('/mis-tareas', userExtractor, async (req, res) => {
   try {
     const usuario = req.user
 
-    let tareas
-    if (usuario.Rol === 'maker') {
-      // Si es maker, obtiene las tareas que ha creado
+    let tareas = []
+    if (usuario.Rol === 'profesor') {
+      // Si es profesor, obtiene las tareas que ha creado
       tareas = await Tarea.findAll({
         where: { creadorId: usuario.id },
         include: [{
@@ -21,15 +21,17 @@ tareasRouter.get('/mis-tareas', userExtractor, async (req, res) => {
         }],
         raw: false
       })
-    } else if (usuario.Rol === 'user') {
-      // Si es user, obtiene todas las tareas creadas por makers
+    } else if (usuario.Rol === 'usuario') {
+      // Si es usuario normal, obtiene todas las tareas creadas por profesores
       tareas = await Tarea.findAll({
         include: [{
           model: User,
           as: 'autor',
-          where: { Rol: 'maker' },
+          where: { Rol: 'profesor' }, // Solo tareas creadas por profesores
           attributes: ['username', 'name', 'Rol']
-        }]
+        }],
+        order: [['fechaLimite', 'ASC']], // Ordenar por fecha límite
+        raw: false
       })
     }
 
@@ -100,28 +102,25 @@ tareasRouter.post('/', userExtractor, async (req, res) => {
       }
     }
 
-    const nuevaTarea = new Tarea({
+    const nuevaTarea = await Tarea.create({
       titulo,
       descripcion,
       fechaLimite: new Date(fechaLimite),
-      completada: false,
-      preguntas: preguntas.map(p => ({
-        pregunta: p.pregunta,
-        opciones: p.opciones,
-        respuestas: []
-      })),
-      creador: user.id,
-      nombreCreador: user.name,
-      userInfo: {
-        username: user.username,
-        name: user.name,
-        Rol: user.Rol
-      }
+      preguntas: preguntas,
+      creadorId: user.id
     })
 
-    const tareaGuardada = await nuevaTarea.save()
-    await tareaGuardada.populate('creador', { username: 1, name: 1, Rol: 1 })
-    res.status(201).json(tareaGuardada)
+    // Obtener la tarea con la información del usuario
+    const tareaConUsuario = await Tarea.findOne({
+      where: { id: nuevaTarea.id },
+      include: [{
+        model: User,
+        as: 'autor',
+        attributes: ['username', 'name', 'Rol']
+      }]
+    })
+
+    res.status(201).json(tareaConUsuario)
   } catch (error) {
     console.error('Error al crear tarea:', error)
     res.status(500).json({ error: error.message })
@@ -134,46 +133,79 @@ tareasRouter.post('/:id/responder', userExtractor, async (req, res) => {
     const { preguntaIndex, respuestaIndex } = req.body
     const user = req.user
 
-    if (user.Rol !== 'user') {
+    if (user.Rol !== 'usuario') {
       return res.status(403).json({ error: 'Solo los usuarios pueden responder tareas' })
     }
 
-    const tarea = await Tarea.findById(req.params.id)
+    const tarea = await Tarea.findOne({
+      where: { id: req.params.id }
+    })
+
     if (!tarea) {
       return res.status(404).json({ error: 'Tarea no encontrada' })
     }
 
+    let preguntas = tarea.preguntas || []
+    if (typeof preguntas === 'string') {
+      preguntas = JSON.parse(preguntas)
+    }
+
     // Validar que el índice de la pregunta sea válido
-    if (preguntaIndex < 0 || preguntaIndex >= tarea.preguntas.length) {
+    if (preguntaIndex < 0 || preguntaIndex >= preguntas.length) {
       return res.status(400).json({ error: 'Índice de pregunta inválido' })
     }
 
     // Validar que el índice de la respuesta sea válido
-    const pregunta = tarea.preguntas[preguntaIndex]
-    if (respuestaIndex < 0 || respuestaIndex >= pregunta.opciones.length) {
+    if (respuestaIndex < 0 || respuestaIndex >= preguntas[preguntaIndex].opciones.length) {
       return res.status(400).json({ error: 'Índice de respuesta inválido' })
     }
 
-    // Actualizar solo la respuesta de la pregunta específica
-    const respuestas = pregunta.respuestas || []
-
-const yaRespondio = respuestas.find(r => r.usuarioId.toString() === user.id.toString())
-
-if (yaRespondio) {
-  yaRespondio.seleccion = respuestaIndex
-} else {
-  respuestas.push({ usuarioId: user.id, seleccion: respuestaIndex })
-}
-
-pregunta.respuestas = respuestas
-
-    // Verificar si todas las preguntas han sido respondidas
-    const todasRespondidas = tarea.preguntas.every(p => p.respuestaSeleccionada !== -1)
-    if (todasRespondidas) {
-      tarea.completada = true
+    // Inicializar el array de respuestas si no existe
+    if (!preguntas[preguntaIndex].respuestas) {
+      preguntas[preguntaIndex].respuestas = []
     }
 
-    const tareaActualizada = await tarea.save()
+    // Verificar si el usuario ya respondió esta pregunta
+    const respuestaExistente = preguntas[preguntaIndex].respuestas.findIndex(
+      r => r.usuarioId === user.id
+    )
+
+    // Crear la nueva respuesta
+    const nuevaRespuesta = {
+      usuarioId: user.id,
+      seleccion: respuestaIndex,
+      timestamp: new Date()
+    }
+
+    if (respuestaExistente >= 0) {
+      // Actualizar respuesta existente
+      preguntas[preguntaIndex].respuestas[respuestaExistente] = nuevaRespuesta
+    } else {
+      // Agregar nueva respuesta
+      preguntas[preguntaIndex].respuestas.push(nuevaRespuesta)
+    }
+
+    // Verificar si todas las preguntas han sido respondidas
+    const todasRespondidas = preguntas.every(pregunta => 
+      pregunta.respuestas?.some(r => r.usuarioId === user.id)
+    )
+
+    // Actualizar la tarea en la base de datos
+    await tarea.update({
+      preguntas: preguntas,
+      completada: todasRespondidas
+    })
+
+    // Obtener la tarea actualizada con la información del usuario
+    const tareaActualizada = await Tarea.findOne({
+      where: { id: tarea.id },
+      include: [{
+        model: User,
+        as: 'autor',
+        attributes: ['username', 'name', 'Rol']
+      }]
+    })
+
     res.json(tareaActualizada)
   } catch (error) {
     console.error('Error al responder pregunta:', error)

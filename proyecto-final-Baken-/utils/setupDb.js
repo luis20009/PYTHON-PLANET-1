@@ -12,18 +12,21 @@ const setupDatabase = async () => {
       {
         username: 'administrador',
         name: 'Administrador Principal',
+        email: 'admin@example.com',
         passwordHash: await bcrypt.hash('admin123', 10),
         Rol: 'administrador'
       },
       {
         username: 'profesor1',
         name: 'Profesor Demo',
+        email: 'profesor@example.com',
         passwordHash: await bcrypt.hash('profesor123', 10),
         Rol: 'profesor'
       },
       {
         username: 'usuario1',
         name: 'Usuario Demo',
+        email: 'usuario@example.com',
         passwordHash: await bcrypt.hash('usuario123', 10),
         Rol: 'usuario'
       }

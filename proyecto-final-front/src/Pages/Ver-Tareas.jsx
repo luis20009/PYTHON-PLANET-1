@@ -14,10 +14,18 @@ const VerTareas = ({ user }) => {
 
   useEffect(() => {
     const cargarTareas = async () => {
-      if (user?.token && user?.Rol === 'user') {
+      if (user?.token && user?.Rol === 'usuario') {
         try {
           const misTareas = await obtenerMisTareas()
-          setTareas(misTareas)
+          if (Array.isArray(misTareas)) {
+            setTareas(misTareas)
+            if (misTareas.length === 0) {
+              setMensaje("No hay tareas disponibles")
+            }
+          } else {
+            console.error('La respuesta no es un array:', misTareas)
+            setMensaje("Error al cargar las tareas")
+          }
         } catch (error) {
           console.error('Error al cargar tareas:', error)
           setMensaje("Error al cargar las tareas")
@@ -30,32 +38,44 @@ const VerTareas = ({ user }) => {
   const handleResponderPregunta = async (tareaId, preguntaIndex, respuestaIndex) => {
     try {
       const tareaActualizada = await responderTarea(tareaId, preguntaIndex, respuestaIndex)
-      setTareas(tareas.map(tarea =>
-        tarea.id === tareaId ? tareaActualizada : tarea
-      ))
+      
+      if (tareaActualizada) {
+        // Actualizar la lista de tareas con la respuesta
+        setTareas(tareas.map(tarea =>
+          tarea.id === tareaId ? tareaActualizada : tarea
+        ))
 
-      const pregunta = tareaActualizada.preguntas[preguntaIndex]
-      const respuestaUsuario = pregunta.respuestas?.find(r => r.usuarioId === user.id)
-      const esCorrecta = pregunta.opciones[respuestaUsuario?.seleccion]?.esCorrecta
+        // Verificar si la respuesta es correcta
+        const pregunta = tareaActualizada.preguntas[preguntaIndex]
+        const respuestaUsuario = pregunta.respuestas?.find(r => r.usuarioId === user.id)
+        const esCorrecta = pregunta.opciones[respuestaUsuario?.seleccion]?.esCorrecta
 
-      setMensaje(esCorrecta ? "¡Correcto! 🎉" : "Incorrecto. Inténtalo de nuevo 😟")
+        setMensaje(esCorrecta ? "¡Correcto! 🎉" : "Incorrecto. Inténtalo de nuevo 😟")
+      }
     } catch (error) {
+      console.error('Error al responder:', error)
       setMensaje(error?.response?.data?.error || "Error al enviar la respuesta")
     }
     setTimeout(() => setMensaje(null), 3000)
   }
 
   const tareasPendientes = tareas.filter(tarea => {
-    const preguntas = tarea.preguntas || []
+    // Asegurémonos de que la tarea tenga preguntas
+    const preguntas = Array.isArray(tarea.preguntas) ? tarea.preguntas : []
+    if (preguntas.length === 0) return false
+
+    // Verificar respuestas del usuario
     const respuestasUsuario = preguntas.map(p => 
-      p.respuestas?.find(r => r.usuarioId === user.id)
+      Array.isArray(p.respuestas) ? p.respuestas.find(r => r.usuarioId === user.id) : null
     )
     const haRespondidoTodas = respuestasUsuario.every(r => r && r.seleccion !== undefined)
+
     // Filtrar por fecha: solo mostrar si la fecha límite es hoy o en el futuro
     const hoy = new Date()
     hoy.setHours(0,0,0,0) // Ignorar la hora
     const fechaLimite = new Date(tarea.fechaLimite)
     fechaLimite.setHours(0,0,0,0)
+
     return !haRespondidoTodas && fechaLimite >= hoy
   })
   return (
@@ -68,7 +88,7 @@ const VerTareas = ({ user }) => {
         </p>
       )}
 
-      {user?.Rol === 'user' ? (
+      {user?.Rol === 'usuario' ? (
         tareasPendientes.length === 0 ? (
           <p className="sin-tareas">🎉 ¡Todas tus tareas están completadas!</p>
         ) : (

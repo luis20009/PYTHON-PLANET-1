@@ -1,27 +1,27 @@
 import { useState } from "react";
 
 const ContactForm = ({
-  nombre,
-  contraseña,
-  correo,
+  username,
+  name,
+  email,
+  number,
   editId,
-  setNombre,
-  setContraseña,
-  setCorreo,
+  setUsername,
+  setName,
+  setEmail,
+  setNumber,
   onSubmit,
   onCancel,
-  comentario,
-  setComentario,
-  contactos = []
+  comments,
+  setComments
 }) => {
-  const [correoError, setCorreoError] = useState("");
   const [contrasenaError, setContrasenaError] = useState("");
 
-  // Validar contraseña segura
+  // Validar contraseña (debe tener al menos una letra y un número, mínimo 4 caracteres)
   const validarContrasena = (value) => {
-    // Al menos 8 caracteres, una mayúscula, una minúscula, un número y un caracter especial
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-    return regex.test(value);
+    const tieneLetra = /[a-zA-Z]/.test(value);
+    const tieneNumero = /\d/.test(value);
+    return value.length >= 4 && tieneLetra && tieneNumero;
   };
 
   const handleContrasenaChange = (e) => {
@@ -30,103 +30,80 @@ const ContactForm = ({
 
     if (!validarContrasena(value)) {
       setContrasenaError(
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un caracter especial."
+        "La contraseña debe tener al menos 4 caracteres, incluyendo al menos una letra y un número."
       );
     } else {
       setContrasenaError("");
     }
   };
 
-  const handleCorreoChange = (e) => {
-    const value = e.target.value;
-    setCorreo(value);
-
-    // Validar si el correo ya existe (excepto si se está editando el mismo contacto)
-    const correoExiste = contactos.some(
-      (c) => c.email === value && c.id !== editId
-    );
-    if (correoExiste) {
-      setCorreoError("Este correo electrónico ya está registrado.");
-    } else {
-      setCorreoError("");
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validar correo
-    const correoExiste = contactos.some(
-      (c) => c.email === correo && c.id !== editId
-    );
-    if (correoExiste) {
-      setCorreoError("Este correo electrónico ya está registrado.");
-      return;
-    }
+    
     // Validar contraseña
     if (!validarContrasena(contraseña)) {
       setContrasenaError(
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un caracter especial."
+        "La contraseña debe tener al menos 4 caracteres, incluyendo al menos una letra y un número."
       );
       return;
     }
-    setCorreoError("");
-    setContrasenaError("");
-    // Llama al submit original (agrega o edita contacto)
-    await onSubmit(e);
 
-    // Si hay comentario y se creó/actualizó el contacto, lo agrega
-  
+    // Llama al submit original
+    await onSubmit(e);
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <label>
-        Nombre:
+        Usuario:
         <input
           type="text"
-          value={nombre}
-          onChange={e => setNombre(e.target.value)}
+          value={username}
+          onChange={e => setUsername(e.target.value)}
           required
         />
       </label>
       <br />
       <label>
-        Contraseña:
+        Nombre:
         <input
-          type="password"
-          value={contraseña}
-          onChange={handleContrasenaChange}
+          type="text"
+          value={name}
+          onChange={e => setName(e.target.value)}
           required
         />
       </label>
-      {contrasenaError && (
-        <div style={{ color: "red", marginTop: "4px" }}>{contrasenaError}</div>
-      )}
+      <br />
+      <label>
+        Número:
+        <input
+          type="text"
+          value={number}
+          onChange={e => setNumber(e.target.value)}
+          required
+        />
+      </label>
       <br />
       <label>
         Correo electrónico:
         <input
           type="email"
-          value={correo}
-          onChange={handleCorreoChange}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
       </label>
-      {correoError && (
-        <div style={{ color: "red", marginTop: "4px" }}>{correoError}</div>
-      )}
       <br />
       <label>
-        Comentario:
-        <input
-          type="text"
-          value={comentario}
-          onChange={e => setComentario(e.target.value)}
+        Comentarios:
+        <textarea
+          value={comments}
+          onChange={e => setComments(e.target.value)}
           placeholder="Agrega un comentario"
         />
       </label>
       <br />
-      <button type="submit" disabled={!!correoError || !!contrasenaError}>
+      <button type="submit">
         {editId ? "Actualizar" : "Agregar"}
       </button>
       {editId && (

@@ -14,6 +14,7 @@ const Menu = ({ user }) => {
         <li><Link to="/PYTHON-PLANET">INGRESO</Link></li>
         {!hasRoleView && <li><Link to="/sobre-nosotros">Sobre Nosotros</Link></li>}
         {!hasRoleView && <Link to="/contactanos">Contáctanos</Link>}
+        {user?.Rol === "administrador" && <li><Link to="/ver-contactos">Ver Contactos</Link></li>}
       </ul>
     </nav>
   );

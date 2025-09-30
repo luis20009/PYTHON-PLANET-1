@@ -7,6 +7,7 @@ import ListaUsuarios from "../components/ListaUsuarios"
 const Crear = ({ user }) => {
   const [username, setUsername] = useState("")
   const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [Rol, setRol] = useState("usuario")
   const [message, setMessage] = useState(null)
@@ -18,6 +19,7 @@ const Crear = ({ user }) => {
       const newUser = {
         username,
         name,
+        email,
         password,
         Rol
       }
@@ -28,6 +30,7 @@ const Crear = ({ user }) => {
       // Limpiar formulario
       setUsername("")
       setName("")
+      setEmail("")
       setPassword("")
       setRol("usuario")
       
@@ -65,6 +68,15 @@ const Crear = ({ user }) => {
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Correo: </label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             required
           />
         </div>

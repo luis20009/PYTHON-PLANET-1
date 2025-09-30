@@ -30,11 +30,14 @@ const crearTarea = async newObject => {
   return response.data
 }
 
-const responderTarea = async (id, answerData) => {
+const responderTarea = async (id, preguntaIndex, respuestaIndex) => {
   const config = {
     headers: { Authorization: token }
   }
-  const response = await axios.post(`${baseUrl}/${id}/responder`, answerData, config)
+  const response = await axios.post(`${baseUrl}/${id}/responder`, {
+    preguntaIndex,
+    respuestaIndex
+  }, config)
   return response.data
 }
 

@@ -53,6 +53,8 @@ const ListaUsuarios = ({ user }) => {
                   <br />
                   Nombre: {u.name}
                   <br />
+                  Correo: {u.email}
+                  <br />
                   Rol: <em>{u.Rol || "Sin rol"}</em>
                 </div>
                 {/* No mostrar el botón de eliminar para el usuario actual */}

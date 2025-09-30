@@ -6,6 +6,7 @@ import Crear from "../Pages/Crear-usuarios";
 import Tareas from "../Pages/Tareas";
 import VerTareas from "../Pages/Ver-Tareas";
 import Callme from "../Pages/Contactanos copy";
+import VerContacts from "../Pages/ver-contacts";
 
 const AppRoutes = ({ user, setUser }) => (
   <Router>
@@ -17,6 +18,10 @@ const AppRoutes = ({ user, setUser }) => (
       <Route path="/Tareas-ver" element={<VerTareas user={user} />} />
       <Route path="/Crear" element={<Crear user={user} />} />
       <Route path="/contactanos" element={<Callme />} />
+      <Route 
+        path="/ver-contactos" 
+        element={user?.Rol === 'administrador' ? <VerContacts user={user} /> : <Servicios user={user} />} 
+      />
     </Routes>
   </Router>
 );

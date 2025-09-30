@@ -9,6 +9,7 @@ const Tareas = ({ user }) => {
   const [fechaLimite, setFechaLimite] = useState("")
   const [mensaje, setMensaje] = useState(null)
   const [tareas, setTareas] = useState([])
+  const [errorTareas, setErrorTareas] = useState(null)
   const [preguntas, setPreguntas] = useState([{
     pregunta: '',
     opciones: [{ texto: '', esCorrecta: false }]
@@ -27,9 +28,17 @@ const Tareas = ({ user }) => {
       if (user?.token && user?.Rol === 'profesor') {
         try {
           const misTareas = await obtenerMisTareas()
-          setTareas(misTareas)
+          if (Array.isArray(misTareas)) {
+            setTareas(misTareas)
+            setErrorTareas(null)
+          } else {
+            console.error('La respuesta no es un array:', misTareas)
+            setTareas([])
+            setErrorTareas('No se pudieron cargar las tareas correctamente')
+          }
         } catch (error) {
           console.error('Error al cargar tareas:', error)
+          setTareas([])
           setMensaje("Error al cargar las tareas")
         }
       }
@@ -367,19 +376,25 @@ const Tareas = ({ user }) => {
           </form>
 
           <h3>Mis Tareas</h3>
-          <ul>
-            {tareas.map(tarea => (
-              <li key={tarea.id}>
-                <h4>{tarea.titulo}</h4>
-                <p>{tarea.descripcion}</p>
-                <p>Fecha límite: {new Date(tarea.fechaLimite).toLocaleDateString()}</p>
-                <p>Estado: {tarea.completada ? 'Completada' : 'Pendiente'}</p>
-                <p>Creado por: {tarea.nombreCreador}</p>
-                <p>Rol: {tarea.userInfo?.Rol}</p>
-                {tarea.respuesta && <p>Respuesta: {tarea.respuesta}</p>}
-              </li>
-            ))}
-          </ul>
+          {errorTareas ? (
+            <p className="error-message">{errorTareas}</p>
+          ) : tareas.length === 0 ? (
+            <p>No hay tareas disponibles</p>
+          ) : (
+            <ul>
+              {tareas.map(tarea => (
+                <li key={tarea.id}>
+                  <h4>{tarea.titulo}</h4>
+                  <p>{tarea.descripcion}</p>
+                  <p>Fecha límite: {new Date(tarea.fechaLimite).toLocaleDateString()}</p>
+                  <p>Estado: {tarea.completada ? 'Completada' : 'Pendiente'}</p>
+                  <p>Creado por: {tarea.nombreCreador}</p>
+                  <p>Rol: {tarea.userInfo?.Rol}</p>
+                  {tarea.respuesta && <p>Respuesta: {tarea.respuesta}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       ) : (
         <p>No tienes permisos para crear tareas. Solo los profesores pueden crear tareas.</p>

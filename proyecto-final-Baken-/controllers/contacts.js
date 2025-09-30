@@ -34,10 +34,10 @@ contactRouter.get('/:id', async (request, response) => {
 
 contactRouter.post('/', async (request, response) => {
   try {
-    const { name, number, email, comments } = request.body
+    const { username, name, number, email, comments } = request.body
 
-    if (!name || !number || !email) {
-      return response.status(400).json({ error: 'name, number, and email are required' })
+    if (!username || !name || !number || !email) {
+      return response.status(400).json({ error: 'username, name, number, and email are required' })
     }
 
     // Verificar si ya existe un contacto con ese email
@@ -48,6 +48,7 @@ contactRouter.post('/', async (request, response) => {
 
     // Crear el nuevo contacto
     const contact = await Contact.create({
+      username,
       name,
       number, 
       email,
@@ -80,13 +81,14 @@ contactRouter.delete('/:id', async (request, response) => {
 })
 
 contactRouter.put('/:id', async (request, response) => {
-  const { name, number, email, comments } = request.body
+  const { username, name, number, email, comments } = request.body
 
-  if (!name || !number) {
-    return response.status(400).json({ error: 'name and number are required' })
+  if (!username || !name || !number) {
+    return response.status(400).json({ error: 'username, name and number are required' })
   }
 
   const contactToUpdate = {
+    username,
     name,
     number,
     email,
