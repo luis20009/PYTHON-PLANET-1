@@ -70,7 +70,7 @@ const VerContacts = ({ user }) => {
                 <p><strong>Email:</strong> {contact.email}</p>
                 <p><strong>Nombre:</strong> {contact.name}</p>
                 <p><strong>Contraseña:</strong>{contact.number}</p>
-                <p><strong>Mensaje:</strong>{contact.comments}</p>
+                <p><strong>Rol:</strong>{contact.comments}</p>
                 <p className="mensaje">{contact.mensaje}</p>
                 <p><strong>Fecha:</strong> {new Date(contact.createdAt).toLocaleDateString()}</p>
               </div>
